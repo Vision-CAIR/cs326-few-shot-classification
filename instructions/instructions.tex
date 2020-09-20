@@ -1,0 +1,164 @@
+\documentclass[letterpaper,12pt]{article}
+\usepackage{tabularx} % extra features for tabular environment
+\usepackage{amsmath}  % improve math presentation
+\usepackage{graphicx} % takes care of graphic including machinery
+\usepackage[margin=0.8in,letterpaper]{geometry} % decreases margins
+%\usepackage{cite} % takes care of citations
+\usepackage[final]{hyperref} % adds hyper links inside the generated pdf file
+\hypersetup{
+	colorlinks=true,       % false: boxed links; true: colored links
+	linkcolor=blue,        % color of internal links
+	citecolor=blue,        % color of links to bibliography
+	filecolor=magenta,     % color of file links
+	urlcolor=blue         
+}
+
+\usepackage{natbib}
+\bibliographystyle{plainnat}
+
+\title{
+CS 394 Contemporary Topics in Machine Learning
+\\
+Practical assignment \#2: Few-Shot Learning
+}
+%\subtitle{sdf}
+%\author{Ivan Skorokhodov, Jun Chen, Mohamed Elhoseiny}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Intro}
+
+In few-shot learning, our goal is to train a model on a \textit{very} small number of examples.
+Usually, this is done by some sort of smart pretraining on a bigger dataset and preparing the model to a tough life of few-shot classification that it will encounter later.
+
+In this assignment, we will consider $K$-shot classification for different values of $K$ and see how different methods perform in terms of quantitive performance, ease of implementation, training speed, etc.
+To make things fair, we will use good ol' LeNet (with some slight modifications) for all the methods.
+The methods we are going to compare are the following:
+\begin{enumerate}
+    \item Unpretrained baseline. The simplest baseline ever: do nothing, just train your model on these $K$ examples you had been given to.
+    \item Pretrained baseline. Similar to the above one, but now we pretrain the model on some bigger dataset and then fine-tune it on few target examples.
+    \item ProtoNet \cite{ProtoNet}. Train an image embedder model and classify images based on the closest centroid.
+    \item MAML \cite{MAML}. A ``learning-to-learn'' approach: we pretrain our model in such a way that it has a good init for learning other tasks.
+\end{enumerate}
+
+This assignment targets people who have good hands-on experience on training deep learning models, have decent coding experience overall and are capable of googling things on their own.
+
+\section{The assignment}
+We are going solve a 5-class $K$-shot classification of Omniglot characters \cite{Omniglot}.
+Omniglot dataset contains 50 alphabets that are split into 30 train and 20 test alphabets that give  964 train and 659 test different symbols in total.
+Train and test symbols do not overlap, i.e. the test set is entirely different from the training one.
+
+To keep things simple, we are going to mix the alphabets between each other inside a corresponding split.
+We'll randomly select symbols from the source alphabets to construct the current classification task and we'll evaluate in a similar manner on the test split.
+
+We are going to do $K$-shot classification for $n = 1, 2, 3, 5, 10, 15$ and see how different methods compare between each other for different values of $K$.
+
+You are given a pytorch code template to build upon, that you can modify the way you like or even ignore completely and do everything on your own with any frameworks/libraries you like.
+However, using the code template may make things easier for you.
+
+\subsection{Unpretrained baseline (0 pts)}
+Unpretrained baseline is already implemented for you so you have a warmer start.
+You will just need to launch it for different $K$ and check the results.
+You can run it by calling:
+\begin{verbatim}
+CUDA_VISIBLE_DEVICES=0 python run_experiment.py -m unpretrained_baseline
+\end{verbatim}
+
+\subsection{Pretrained baseline (5 pts)}
+To run the pretrained baseline you should pick decent hyperparameter values, familiarize yourself with the code template and modify things in such a way that LeNet is getting pretrained.
+
+Your task is:
+\begin{itemize}
+    \item Implement the pretrained baseline.
+    \item Answer the following questions:
+    \begin{enumerate}
+        \item Does it work better than the unpretrained baseline? If not, why?
+    \end{enumerate}
+\end{itemize}
+
+
+\subsection{Prototypical Networks (25 pts)}
+ProtoNet has been covered in the lecture, but here we will briefly expose our setup.
+We are given a neural network $f_\theta : x \mapsto v$ that embeds and image $x$ into feature vector $v = f_\theta(x)$.
+We compute prototypes for each class $c$ as:
+\begin{equation}
+    p_c = \frac{1}{N_c} \sum_{i=1}^{N_c} f_\theta(x^{(i)}_c)
+\end{equation}
+where all $x^{(i)}_c$ belong to the same class $c$ and $N_c$ is the number of such instances in a given batch.
+For simplicity, we'll use the same number of examplars for each class in a given mini-batch.
+Ideally, we would like to compute prototypes based on the all training examples of a given class (not only those that are in the current batch), but it would be too costly.
+
+We compute logits by measuring the distance between $p_c$ and $v^{(i)}$.
+In the original paper \cite{ProtoNet}, authors used $L_2$ distance, but cosine should be also fine in our case.
+%In other words, for cosine-similarity, we compute logit value $\hat{y}_c^{(i)}$ of $i$-th examplar for $c$-th class as:
+%\begin{equation}
+%    \hat{y}_c^{(i)} = s \cdot \frac{\langle p_c, v^{(i)} \rangle}{\| p_c \|_2 \| v^{(i)} \|_2}
+%\end{equation}
+
+Your task is:
+\begin{itemize}
+    \item Implement prototypical networks. You can use either euclidian distance to compute the logits (like in the original paper) or cosine similarity.
+    \item Answer the following questions:
+    \begin{itemize}
+        \item What are the advantages of the model? What are the disadvantages? How is it better/worse compared to other methods in terms of the quantitative performance? In terms of implementation simplicity? In terms of training speed? In terms of inference speed? In terms of memory consumption?
+        \item How well does it perform, when we \textit{do not train the model at all}? Why?
+    \end{itemize}
+\end{itemize}
+
+\subsection{MAML (70 pts)}
+MAML has been covered at the lecture, but you make like to read \href{https://www.bayeswatch.com/2018/11/30/HTYM/}{this article} to refresh your knowledge about MAML.
+
+Your task is:
+\begin{itemize}
+    \item Implement MAML. You can choose either first-order or second-order approximation.
+    \item Answer the following questions:
+    \begin{enumerate}
+        \item What are the advantages/disadvantages of MAML? How does it compare to other methods in terms of performance/training speed/simplicity/ease of implementation?
+        \item Why MAML is unstable? How can we alleviate this?
+        \item If you implemented the model in pytorch, explain why we couldn't use a traditional \textit{nn.Module} for MAML implementation.
+    \end{enumerate}
+    \item (+10 bonus points) Implement both first-order and second-order MAML. Compare the difference between them in terms of performance and training stability.
+\end{itemize}
+
+Hints:
+\begin{itemize}
+    \item Google things \textit{a lot}. Check open-source implementations.
+    \item Keep in mind that MAML is unstable. What tricks do you know to stabilize training? (it's high time to reminisce your GAN and RL training experience)
+    \item Keep in mind that MAML takes time to converge. You can play with open-source implementations to get the feeling.
+    \item Make sure that your MAML works ``without MAML'', i.e. when we have 0 inner loop steps, when we have zero inner learning rate, etc.
+\end{itemize}
+
+%\subsection{HyperNet (20 pts)}
+
+%\begin{enumerate}
+%    \item[(5 pts)] Think about, by what value should you scale the parameters. \textit{Hint}: check nn.init in pytorch.
+%    \item[(5 pts)] Answer the following questions. What output distribution does HyperNet produce (considering that its input comes from the standard normal distribution)? Why do we need to scale it when plugging in into a target model?
+%\end{enumerate}
+
+\section{Submission format}
+Your submission should be a zip named \textit{Firstname\_Lastname.zip} archive containing two things:
+\begin{enumerate}
+    \item A small report (\textit{up to 2 pages}) describing the experiments you ran, hyperparameters you used, the results you obtained and your answers to the questions. \textit{The report must be in pdf format}. We prefer latex, but you won't be penalized for writing it in Microsoft Word or something else.
+    \item Your source code. The source code must be reproducible: when we'll run it we must obtain the same results that you report. You won't be penalized if your code will be ``dirty'', but please don't go too hard on us. 
+\end{enumerate}
+
+\textit{The core part of your report should be a plot with the comparison of 4 methods: simple baseline, pretrained baseline, ProtoNet and MAML for different values of $K$.}
+So, $x$-axis is the number of shots (i.e. value of $K$) and $y$-axis is the average test accuracy.
+This plot should contain 4 lines, where each line is a specific method.
+You will get +2, +2, +2 and +4 bonus points if you'll add the corresponding confidence intervals across several random seeds to the plot for unpretrained baseline, pretrained baseline, ProtoNet and MAML respectively.
+
+\section{Rules}
+\begin{enumerate}
+    \item This is an individual assignment, you are not allowed to share your solution with others. In case of cheating, both you and the person you shared your code with will receive 0 points for the assignment. 
+    \item You can modify the provided template any way you like. You can ignore it completely and do everything on your own with any frameworks/libraries you like. You can partially use the provided code and partially use some open-source implementation. In the latter case, you must specify all the sources that you have used.
+    \item You are allowed to use any information or code (including other people's implementations) you can find in the wild, \textit{but you must specify the sources.\footnote{We require this to be able to understand when solutions are similar because they use the same open-source code or because the students shared the code with each other.}} This assignment is designed in such a way that you will still have to do a lot on your own.
+    \item You are not allowed to openly release your solution. In case it is found in public domain, we assume that you have explicitly shared it with someone so rule 1 is being applied.
+%    \item Your solution must be reproducible. See for example how we fix random seed everywhere. Points will be deducted in case of irreproducibility.
+\end{enumerate}
+
+\bibliography{references}
+
+\end{document}
