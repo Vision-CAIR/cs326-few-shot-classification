@@ -1,4 +1,5 @@
-### CS 394 Coding assignment #2
+## CS 326 Low Resource Deep Learning
+### Coding assignment #2
 In this assignment you are asked to implement 3 algorithms for few-shot learning and compare their performance between each other:
 - an unpretrained baseline
 - a pretrained baseline
@@ -37,7 +38,7 @@ Other files should be self-explanatory.
 
 You can search for `TODO` keyword to see what pieces are missing.
 
-### Contribution
+### Contributing
 Create an issue or send a PR if you found a bug or want to propose an update.
 
 <!-- ### Copyright and licensing

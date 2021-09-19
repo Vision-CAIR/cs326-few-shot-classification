@@ -17,7 +17,7 @@
 \bibliographystyle{plainnat}
 
 \title{
-CS 394 Contemporary Topics in Machine Learning
+CS 326 Low Resource Deep Learning
 \\
 Practical assignment \#2: Few-Shot Learning
 }
@@ -31,10 +31,11 @@ Practical assignment \#2: Few-Shot Learning
 
 \section{Intro}
 
-In few-shot learning, our goal is to train a model on a \textit{very} small number of examples.
-Usually, this is done by some sort of smart pretraining on a bigger dataset and preparing the model to a tough life of few-shot classification that it will encounter later.
+In few-shot learning, our goal is to build a model which would be able to solve a task with a very limited amount of supervision.
+For image classification, this means that we want to have a model which can learn to categorize new classes with few examples per category.
+Most often, this is done by some sort of pretraining on a larger dataset to induce general knowledge into the model which in turn should help to capture novel concepts faster.
 
-In this assignment, we will consider $K$-shot classification for different values of $K$ and see how different methods perform in terms of quantitive performance, ease of implementation, training speed, etc.
+In this assignment, we will consider $K$-shot image classification for different values of $K$ and see how different methods perform in terms of quantitive performance, ease of implementation, training speed, etc.
 To make things fair, we will use good ol' LeNet (with some slight modifications) for all the methods.
 The methods we are going to compare are the following:
 \begin{enumerate}
@@ -44,7 +45,9 @@ The methods we are going to compare are the following:
     \item MAML \cite{MAML}. A ``learning-to-learn'' approach: we pretrain our model in such a way that it has a good init for learning other tasks.
 \end{enumerate}
 
-This assignment targets people who have good hands-on experience on training deep learning models, have decent coding experience overall and are capable of googling things on their own.
+This assignment targets people who have good hands-on experience in deep learning and Pytorch.
+The approximate time to solve the assignment is $\sim 2$ full days.
+A GPU card would be very, very useful.
 
 \section{The assignment}
 We are going solve a 5-class $K$-shot classification of Omniglot characters \cite{Omniglot}.
@@ -103,7 +106,7 @@ Your task is:
     \item Implement prototypical networks. You can use either euclidian distance to compute the logits (like in the original paper) or cosine similarity.
     \item Answer the following questions:
     \begin{itemize}
-        \item What are the advantages of the model? What are the disadvantages? How is it better/worse compared to other methods in terms of the quantitative performance? In terms of implementation simplicity? In terms of training speed? In terms of inference speed? In terms of memory consumption?
+        \item What are the advantages of the model? What are the disadvantages? How is it better/worse compared to other methods in terms of the quantitative performance? In terms of the implementation simplicity? In terms of training speed? In terms of inference speed? In terms of memory consumption?
         \item How well does it perform, when we \textit{do not train the model at all}? Why?
     \end{itemize}
 \end{itemize}
@@ -126,8 +129,8 @@ Your task is:
 Hints:
 \begin{itemize}
     \item Google things \textit{a lot}. Check open-source implementations.
+    \item Keep in mind that MAML takes time to converge. For many setups, it might take up to several hours. You can play with open-source implementations to get the feeling.
     \item Keep in mind that MAML is unstable. What tricks do you know to stabilize training? (it's high time to reminisce your GAN and RL training experience)
-    \item Keep in mind that MAML takes time to converge. You can play with open-source implementations to get the feeling.
     \item Make sure that your MAML works ``without MAML'', i.e. when we have 0 inner loop steps, when we have zero inner learning rate, etc.
 \end{itemize}
 

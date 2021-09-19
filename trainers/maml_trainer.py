@@ -29,7 +29,7 @@ class MAMLTrainer(Trainer):
             acc = "TODO"
 
             # TODO(maml): compute the gradient and update the fast weights
-            # Hint: think hard about it. This is maybe the hardest part of the assignment
+            # Hint: think hard about it. This is maybe the hardest part of the whole assignment
             # You will likely need to check open-source implementations to get the idea of how things work
             grad = "TODO"
             fast_w = "TODO"
@@ -47,7 +47,8 @@ class MAMLTrainer(Trainer):
 
         optim.zero_grad()
         outer_loss.backward()
-        # TODO(maml): you may like to add gradient clipping here
+        # TODO(maml): adding gradient clipping here might help to stabilize training
+        # It is not ultimately necessary, but might help.
         optim.step()
 
         return losses[-1], accs[-1]
